@@ -29,8 +29,8 @@ class VAE(object):
 			conv2 = convLayer(conv1, 5, 5, 128, "conv2")
 			conv2_flat = tf.contrib.layers.flatten(conv2)
 
-			mean = fcLayer(conv2_flat, 20, "mean")
-			stddev = fcLayer(conv2_flat, 20, "stddev")
+			mean = fcLayer(conv2_flat, self.n_z, "mean")
+			stddev = fcLayer(conv2_flat, self.n_z, "stddev")
 
 		return mean, stddev
 
