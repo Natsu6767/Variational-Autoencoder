@@ -53,7 +53,7 @@ def tConvLayer(x, filter_height, filter_width,
         tconv = tf.nn.conv2d_transpose(x, W, strides=[1, stride, stride, 1], padding=padding, output_shape=output_shape)
         z = tf.nn.bias_add(tconv, b)
         
-                #Add batch-norm layer
+        #Add batch-norm layer
         batch_norm = tf.layers.batch_normalization(z, axis=1, beta_initializer=tf.constant_initializer(0.0),
             gamma_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01))
 
