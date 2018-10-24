@@ -25,25 +25,24 @@ for i in range(steps):
 
     sess.run(optimiser, feed_dict={X_in : batch})
 
-    #Visualize the reconstruction and calculate the losses.
+    #Every epoch.
     if not i % 500:
-        loss, gen_image, recon, latent, z_mu = sess.run([model.cost, model.generated_images, 
-            model.reconstruction_loss, model.latent_loss, model.z_mean], feed_dict={X_in : batch})
+        loss, gen_image, recon, latent = sess.run([model.cost, model.generated_images, 
+            model.reconstruction_loss, model.latent_loss], feed_dict={X_in : batch})
         
         epoch = i//500
         print("Epoch %d:\n" %epoch)
-        print("Total Loss: %f\nReconstruction Loss: %f\nLatent Loss: %f" %(loss, np.mean(recon), np.mean(latent)))
-
+        print("Total Loss: %f\nReconstruction Loss: %f\nLatent Loss: %f" %(loss, np.mean(recon), np.mean(latent))) #Print losses.
+        
+        #Show input and reconstructions.
         """
         plt.imshow(np.reshape(batch[0], [28, 28]), cmap='gray')
         plt.show()
         plt.imshow(np.reshape(gen_image[0], [28, 28]), cmap='gray')
         plt.show()
         """
-
-        if epoch in (5, 10, 15, 20):
-
-            #To generate new unseen samples.
+        #Visualize 2D latent manifold.
+        if epoch in (5, 10, 15, 20) and model.n_z == 2: #Only applicable for 2D latent space as higher dimensions are not visualizable!
             n = 20 #figure with 20x20 digits.
             digit_size = 28
             figure = np.zeros((digit_size*n, digit_size*n))
@@ -68,15 +67,17 @@ for i in range(steps):
 
         print("_"*25)
 
+#Visualization of the Latent Space.
+#Only 2 dimensions of the latent space are visualized. Higher dimensions are hard to visualize!
 plt_batch = mnist.train.next_batch(batch_size=5000)
-z_mu = sess.run(model.z_mean, feed_dict={X_in: plt_batch[0]})
+z_mu = sess.run(model.z_mean, feed_dict={X_in: plt_batch[0]}) #Get mean encodings (z_mean).
 plt.figure(figsize=(8, 6)) 
 plt.scatter(z_mu[:, 0], z_mu[:, 1], c=plt_batch[1], cmap='brg')
 plt.colorbar()
 plt.grid()
 plt.show()
 
-
+#Code for generating new unseen samples.
 """
 randoms = [np.random.normal(0, 1, model.n_z) for _ in range(128)]
 imgs = sess.run(model.generated_images, feed_dict = {model.z_generated : randoms})

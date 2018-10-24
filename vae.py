@@ -49,7 +49,7 @@ class VAE(object):
     #Decoder
     def generation(self, z):
 
-        with tf.variable_scope("generation", reuse=tf.AUTO_REUSE):
+        with tf.variable_scope("generation"):
             z_expand = tf.reshape(fcLayer(z, 4*4*64, "z_expand"), [-1, 4, 4, 64])
             
             tconv1 = tConvLayer(z_expand, 3, 3, [self.batch_size, 7, 7, 64], "tconv1")
