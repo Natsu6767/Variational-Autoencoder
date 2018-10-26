@@ -23,10 +23,10 @@ class VAE(object):
         generated_flatten = tf.reshape(self.generated_images, [self.batch_size, 28*28])
         
         #Mean Squared Error
-        self.reconstruction_loss = tf.reduce_sum(tf.squared_difference(generated_flatten, self.X), 1)
+        #self.reconstruction_loss = tf.reduce_sum(tf.squared_difference(generated_flatten, self.X), 1)
         
         #Binary cross-entropy
-        #self.reconstruction_loss = -tf.reduce_sum(self.X * tf.log(1e-8 + generated_flatten) + (1-self.X) * tf.log(1e-8 + 1 - generated_flatten),1)
+        self.reconstruction_loss = -tf.reduce_sum(self.X * tf.log(1e-8 + generated_flatten) + (1-self.X) * tf.log(1e-8 + 1 - generated_flatten),1)
         
         #KL Divergence loss term
         self.latent_loss = -0.5 * tf.reduce_sum(1 + 2.0*z_stddev - tf.square(self.z_mean) - tf.exp(2.0*z_stddev),1)
@@ -36,13 +36,13 @@ class VAE(object):
     def recognition(self, input_image):
 
         with tf.variable_scope("recognition"):
-            conv1 = convLayer(input_image, 5, 5, 32, "conv1")
-            conv2 = convLayer(conv1, 5, 5, 64, "conv2")
-            conv3 = convLayer(conv2, 3, 3, 64, "conv3", stride=1)
-            conv3_flat = tf.contrib.layers.flatten(conv3)
+            conv1 = convLayer(input_image, 3, 3, 32, "conv1")
+            conv2 = convLayer(conv1, 3, 3, 64, "conv2")
+            conv2_flat = tf.contrib.layers.flatten(conv2)
+            fc1 = fcLayer(conv2_flat, 16, name = 'fc1')
 
-            mean = fcLayer(conv3_flat, self.n_z, relu=False, name="mean")
-            stddev = fcLayer(conv3_flat, self.n_z, relu=False, name="stddev")
+            mean = fcLayer(fc1, self.n_z, relu=False, name="mean")
+            stddev = fcLayer(fc1, self.n_z, relu=False, name="stddev")
 
         return mean, stddev
     
@@ -50,12 +50,11 @@ class VAE(object):
     def generation(self, z):
 
         with tf.variable_scope("generation"):
-            z_expand = tf.reshape(fcLayer(z, 4*4*64, "z_expand"), [-1, 4, 4, 64])
+            z_expand = tf.reshape(fcLayer(z, 7*7*64, "z_expand"), [-1, 7, 7, 64])
             
-            tconv1 = tConvLayer(z_expand, 3, 3, [self.batch_size, 7, 7, 64], "tconv1")
-            tconv2 = tConvLayer(tconv1, 5, 5, [self.batch_size, 14, 14, 32], "tconv2")
-            tconv3 = tConvLayer(tconv2, 5, 5, [self.batch_size, 28, 28, 1], "tconv3", activation=False)
-
-            out = tf.nn.sigmoid(tconv3)
+            tconv1 = tConvLayer(z_expand, 3, 3, [self.batch_size, 14, 14, 32], "tconv1")
+            tconv2 = tConvLayer(tconv1, 3, 3, [self.batch_size, 28, 28, 1], "tconv2", activation=False)
+            
+            out = tf.nn.sigmoid(tconv2)
 
         return out

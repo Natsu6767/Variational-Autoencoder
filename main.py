@@ -82,7 +82,6 @@ plt.show()
 randoms = [np.random.normal(0, 1, model.n_z) for _ in range(128)]
 imgs = sess.run(model.generated_images, feed_dict = {model.z_generated : randoms})
 imgs = [np.reshape(imgs[i], [28, 28]) for i in range(len(imgs))]
-
 for img in imgs[:10]:
     plt.imshow(img, cmap = 'gray')
     plt.show()
